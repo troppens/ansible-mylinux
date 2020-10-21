@@ -1,5 +1,8 @@
 ---
 # This playbook deploys the whole application stack on localhost
 
-- name: Just do nothing
+- name: Install and configure software which I want to have on all servers
   hosts: localhost
+
+  roles:
+    - git
