@@ -4,4 +4,4 @@
 - git
 
 ## Configuration variables
-- see [group_vars/all](group_vars/all)
+- see [ansible/group_vars/all](ansible/group_vars/all)
