@@ -1,0 +1,5 @@
+---
+# This playbook deploys the whole application stack on localhost
+
+- name: Just do nothing
+  hosts: localhost
