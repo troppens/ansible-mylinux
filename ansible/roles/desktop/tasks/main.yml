@@ -1,0 +1,14 @@
+---
+
+- name: Install the 'Server with GUI' package group
+  dnf:
+    name: '@Server with GUI'
+    state: present
+
+- name: Set the default target to "graphical.target" in order to start server GUI automatically
+  file:
+    src: /lib/systemd/system/graphical.target
+    dest: /etc/systemd/system/default.target 
+    owner: root
+    group: root
+    state: link
