@@ -10,3 +10,12 @@
     vbox_version: "{{cmd.stdout}}"
 
 - debug: msg="{{vbox_version}}"
+
+- name: Get version of VirtualBox guest additions
+  shell: modinfo vboxguest
+  register: vboxguest_addons
+  changed_when: false
+  ignore_errors: yes
+
+- debug:
+    msg: "RC 'modinfo vboxguest': {{vboxguest_addons.rc}}"
