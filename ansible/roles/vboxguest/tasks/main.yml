@@ -1,0 +1,12 @@
+---
+
+- name: Get VirtualBox version on guest VM
+  shell: dmidecode | grep vboxVer | cut -b 20-
+  register: cmd
+  changed_when: false
+
+- name: Save VirtualBox version for further processing
+  set_fact:
+    vbox_version: "{{cmd.stdout}}"
+
+- debug: msg="{{vbox_version}}"
