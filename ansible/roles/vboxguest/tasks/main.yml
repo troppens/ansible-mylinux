@@ -20,11 +20,24 @@
 - name: Determine, if VirtualBox guest additions are current
   set_fact:
     update_vboxguest_addons: true
-  when: vboxguest_addons.rc == 1
-        # Need to add check: 'VirtualBox version of host' != 'version of VirtualBox guest additions'
+#  when: vboxguest_addons.rc == 1 or
+#        # Need to add check: 'VirtualBox version of host' != 'version of VirtualBox guest additions'
 
 - debug:
     msg: "Update VirtualBox guest additions: {{update_vboxguest_addons}}"
+  when: update_vboxguest_addons
+
+- name: Install packages required to compile VirtualBox addons
+  package:
+    name:
+      - dkms
+      - bzip2
+      - gcc
+      - make
+      - perl
+      - kernel-devel
+      - "kernel-headers-{{ansible_kernel}}"
+    state: latest
   when: update_vboxguest_addons
 
 - name: Determine VirtualBox guest additions ISO remote path
@@ -51,3 +64,18 @@
     dest: "{{vbox_guestiso_local}}"
     mode: '0400'
   when: update_vboxguest_addons
+
+- name: Mount VirtualBox guest additions ISO image
+  mount:
+    path: /mnt.vbox
+    src: "{{vbox_guestiso_local}}"
+    fstype: iso9660
+    opts: ro,noauto
+    state: mounted
+  when: update_vboxguest_addons
+
+- name: Compile VirtualBox guest additions modules
+  shell: /mnt.vbox/VBoxLinuxAdditions.run
+  ignore_errors: yes
+  when: update_vboxguest_addons
+  
