@@ -1,15 +1,12 @@
 ---
 
-- name: Get VirtualBox version on guest VM
+- name: Get VirtualBox version of host
   shell: dmidecode | grep vboxVer | cut -b 20-
-  register: cmd
+  register: vboxhost
   changed_when: false
 
-- name: Save VirtualBox version for further processing
-  set_fact:
-    vbox_version: "{{cmd.stdout}}"
-
-- debug: msg="{{vbox_version}}"
+- debug:
+    msg: "VirtualBox version: {{vboxhost.stdout}}"
 
 - name: Get version of VirtualBox guest additions
   shell: modinfo vboxguest
@@ -19,3 +16,38 @@
 
 - debug:
     msg: "RC 'modinfo vboxguest': {{vboxguest_addons.rc}}"
+
+- name: Determine, if VirtualBox guest additions are current
+  set_fact:
+    update_vboxguest_addons: true
+  when: vboxguest_addons.rc == 1
+        # Need to add check: 'VirtualBox version of host' != 'version of VirtualBox guest additions'
+
+- debug:
+    msg: "Update VirtualBox guest additions: {{update_vboxguest_addons}}"
+  when: update_vboxguest_addons
+
+- name: Determine VirtualBox guest additions ISO remote path
+  set_fact:
+    vbox_guestiso_remote: "https://download.virtualbox.org/virtualbox/{{vboxhost.stdout}}/VBoxGuestAdditions_{{vboxhost.stdout}}.iso" 
+  when: update_vboxguest_addons
+
+- debug:
+    msg: "Remote path: {{vbox_guestiso_remote}}"
+  when: update_vboxguest_addons
+
+- name: Determine VirtualBox guest additions ISO local path
+  set_fact:
+    vbox_guestiso_local: "/root/VBoxGuestAdditions_{{vboxhost.stdout}}.iso"
+  when: update_vboxguest_addons
+
+- debug:
+    msg: "Local path: {{vbox_guestiso_local}}"
+  when: update_vboxguest_addons
+
+- name: Download VirtualBox guest additions ISO image
+  get_url:
+    url: "{{vbox_guestiso_remote}}"
+    dest: "{{vbox_guestiso_local}}"
+    mode: '0400'
+  when: update_vboxguest_addons
